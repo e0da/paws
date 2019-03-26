@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# shellcheck disable=SC1117
-# Rule deprecated: https://github.com/koalaman/shellcheck/wiki/SC1117#retired
+# shellcheck disable=SC1117 # Deprecated rule
 
 : "${PAWS_MAP:=$HOME/.pawsmap}"
 
 _SCRIPT_NAME=$(basename "$0")
 _WORKING_DIRECTORY=$(pwd)
+_WRAPPED_BIN=$1; shift
+_ARGS="$*"
 
 _USAGE=$(cat <<USAGE
 Run the wrapped bin with the appropriate AWS profile as defined in PAWS_MAP
@@ -56,17 +57,15 @@ PROFILE
 USAGE
 )
 
-_OK=0
-_NO_PROFILE_ERROR=1
-_NO_PAWS_MAP_ERROR=2
-_NO_WRAPPED_BIN_ERROR=3
+_EXIT_OK=0
+_EXIT_NO_PROFILE=1
+_EXIT_NO_PAWS_MAP=2
+_EXIT_NO_WRAPPED_BIN=3
 
 if [[ "$1" == 'help' || "$1" == '--help' || "$1" == '-h' ]]; then
   printf "%s\n" "$_USAGE"
-  exit $_OK
+  exit $_EXIT_OK
 fi
-
-_WRAPPED_BIN=$1; shift
 
 _fail() {
   local _exit_code=$1; shift
@@ -76,7 +75,7 @@ _fail() {
 }
 
 if [ ! -f "$PAWS_MAP" ]; then
-  _fail $_NO_PAWS_MAP_ERROR "No map file found at $PAWS_MAP" >&2
+  _fail $_EXIT_NO_PAWS_MAP "No map file found at $PAWS_MAP" >&2
 fi
 
 _KEY=$(sed 's/[[:punct:]]/_/g' <<< "$_WORKING_DIRECTORY")
@@ -85,14 +84,14 @@ _LINE=$(grep "\b$_KEY\b" < "$PAWS_MAP")
 if _PROFILE=$(awk '{print $2}' <<< "$_LINE") && test -n "$_PROFILE"; then
   echo -n "$_PROFILE" >/dev/null
 else
-  _fail $_NO_PROFILE_ERROR "No profile found in $PAWS_MAP for key: $_KEY"
+  _fail $_EXIT_NO_PROFILE "No profile found in $PAWS_MAP for key: $_KEY"
 fi
 
 if [ -z "$_WRAPPED_BIN" ]; then
-  _fail $_NO_WRAPPED_BIN_ERROR \
+  _fail $_EXIT_NO_WRAPPED_BIN \
     "No wrapped bin supplied. Try something like: $_SCRIPT_NAME aws s3 ls"
 fi
 
 set -ex
-"$_WRAPPED_BIN" --profile "$_PROFILE" "$@"
-
+# shellcheck disable=SC2068 # We want the array split
+"$_WRAPPED_BIN" --profile "$_PROFILE" ${_ARGS[@]}
