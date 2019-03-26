@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# shellcheck disable=SC1117
+# Rule deprecated: https://github.com/koalaman/shellcheck/wiki/SC1117#retired
+
+: "${PAWS_MAP:=$HOME/.pawsmap}"
+
+_SCRIPT_NAME=$(basename "$0")
+_WORKING_DIRECTORY=$(pwd)
+
+_USAGE=$(cat <<USAGE
+Run the wrapped bin with the appropriate AWS profile as defined in PAWS_MAP
+
+Usage
+  $_SCRIPT_NAME BIN ARGS...
+
+Example
+  $_SCRIPT_NAME aws s3 ls s3://some-bucket
+
+BIN
+  The BIN to wrap, e.g. aws or eb
+
+ARGS
+  The args passed to the BIN
+
+PAWS_MAP
+  The map file (default location '$PAWS_MAP') associates directories with
+  profiles, one per line:
+
+    KEY PROFILE
+
+  You can override the path:
+
+    PAWS_MAP=~/my/paws/map $_SCRIPT_NAME aws s3 ls
+
+KEY
+  The directory names are sanitized to simplify the script and config.
+
+    _home_dora_work_dev work_dev
+    _home_dora_work_prod work_prod
+    _home_dora_prod_admin work_prod
+    _home_dora_personal_site dora.laptop
+
+  If I'm in /home/dora/work/dev, use the work_dev profile. If I'm in
+  /home/dora/personal_site, use the dora.laptop profile.
+
+PROFILE
+  The profiles names correspond to the names defined in your ~/.aws/config.
+
+    [profile work_prod]
+    region = us-east-1
+    ...
+
+  This is the profile I would use from ~/.aws/config when selecting the
+  work_prod profile in my map.
+USAGE
+)
+
+_OK=0
+_NO_PROFILE_ERROR=1
+_NO_PAWS_MAP_ERROR=2
+_NO_WRAPPED_BIN_ERROR=3
+
+if [[ "$1" == 'help' || "$1" == '--help' || "$1" == '-h' ]]; then
+  printf "%s\n" "$_USAGE"
+  exit $_OK
+fi
+
+_WRAPPED_BIN=$1; shift
+
+_fail() {
+  local _exit_code=$1; shift
+  local _message=$1; shift
+  printf "%s\n" "$_message\n" >&2
+  printf "%s\n" "$_USAGE" >&2
+  exit "$_exit_code"
+}
+
+if [ ! -f "$PAWS_MAP" ]; then
+  _fail $_NO_PAWS_MAP_ERROR "No map file found at $PAWS_MAP" >&2
+fi
+
+_KEY=$(sed 's/[[:punct:]]/_/g' <<< "$_WORKING_DIRECTORY")
+_LINE=$(grep "\b$_KEY\b" < "$PAWS_MAP")
+
+if _PROFILE=$(awk '{print $2}' <<< "$_LINE") && test -n "$_PROFILE"; then
+  echo -n "$_PROFILE" >/dev/null
+else
+  _fail $_NO_PROFILE_ERROR "No profile found in $PAWS_MAP for key: $_KEY"
+fi
+
+if [ -z "$_WRAPPED_BIN" ]; then
+  _fail $_NO_WRAPPED_BIN_ERROR \
+    "No wrapped bin supplied. Try something like: $_SCRIPT_NAME aws s3 ls"
+fi
+
+set -ex
+"$_WRAPPED_BIN" --profile "$_PROFILE" "$@"
+

@@ -1,0 +1,25 @@
+# Syntax:
+# Definitions are given one per line:
+#
+#  KEY PROFILE_NAME
+#
+# KEY:
+# The key name is calculated by the script. The EASIEST WAY to get the key is to
+# run the command in an unconfigured directory, then the script will tell you
+# the key it's looking for. See the script source to see how key names are
+# calculated.
+#
+# PROFILE_NAME:
+# From your ~/.aws/config, e.g. this PROFILE_NAME is foo:
+#
+#  [profile foo]
+#  region = us-east-1
+#
+# Comments:
+# This is a comment because the line starts with #
+
+_home_dora_work_dev work_dev
+_home_dora_work_prod work_prod
+_home_dora_prod_admin work_prod
+_home_dora_personal_site dora.laptop
+
