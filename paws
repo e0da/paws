@@ -71,8 +71,7 @@ _WRAPPED_BIN=$1; shift
 _fail() {
   local _exit_code=$1; shift
   local _message=$1; shift
-  printf "%s\n" "$_message\n" >&2
-  printf "%s\n" "$_USAGE" >&2
+  printf "%s\n" "$_message" >&2
   exit "$_exit_code"
 }
 
