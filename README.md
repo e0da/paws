@@ -13,7 +13,7 @@ cd paws
 make install
 
 # OR install to a /custom/path
-BIN_PATH=/custom/path make install
+make install BIN_PATH=/custom/path
 ```
 
 To uninstall:
@@ -23,7 +23,7 @@ To uninstall:
 make uninstall
 
 # OR uninstall from a /custom/path
-BIN_PATH=/custom/path make uninstall
+make uninstall BIN_PATH=/custom/path
 ```
 
 ## Usage
