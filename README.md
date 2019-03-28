@@ -1,3 +1,9 @@
+> **Never mind.** I'm going to use the [dotenv][] [oh-my-zsh][] plugin. But I'm
+> leaving this here because there's stuff I like about it.
+
+[dotenv]: https://github.com/robbyrussell/oh-my-zsh/blob/b7b40b0b68c791d57d91c7f4e17ed681d01d5c75/plugins/dotenv/dotenv.plugin.zsh
+[oh-my-zsh]: https://github.com/robbyrussell/oh-my-zsh
+
 # paws
 
 Automatically use the right AWS profile while using the AWS CLI based on your

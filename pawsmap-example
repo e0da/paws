@@ -18,6 +18,14 @@
 #
 #       [profile foo]
 #       region = us-east-1
+#       aws_access_key_id=...
+#       aws_secret_access_key=...
+#
+#     Or in your ~/.aws/credentials:
+#
+#       [foo]
+#       aws_access_key_id=...
+#       aws_secret_access_key=...
 
 _home_dora_work_dev work_dev
 _home_dora_work_prod work_prod
